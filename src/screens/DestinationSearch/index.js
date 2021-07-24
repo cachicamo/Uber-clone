@@ -25,7 +25,7 @@ const DestinationSearch = props => {
   const ref2 = useRef();
 
   const checkNavigation = () => {
-     // ref.current?.setAddressText('Some Text');
+    // ref.current?.setAddressText('Some Text');
     if (
       originPlace &&
       ref.current?.getAddressText() &&

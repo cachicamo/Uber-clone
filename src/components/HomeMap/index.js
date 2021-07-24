@@ -2,12 +2,16 @@ import React, {useEffect, useState} from 'react';
 import {StyleSheet, Image, View, Dimensions} from 'react-native';
 
 import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
+import {API, graphqlOperation} from 'aws-amplify';
+import {listCars} from '../../graphql/queries';
 
-import cars from '../../assets/data/cars';
+// import cars from '../../assets/data/cars';
 
 const HemeMap = props => {
   const [initialRegion, setInitialRegion] = useState(null);
-
+  const [cars, setCars] = useState([]);
+  
+  
   const getImage = type => {
     if (type === 'UberX') {
       return require('../../assets/images/top-UberX.png');
@@ -36,20 +40,6 @@ const HemeMap = props => {
   };
 
   useEffect(() => {
-    // if (navigator.geolocation) {
-    //   navigator.geolocation.getCurrentPosition(
-    //     (position: GeolocationPosition) => {
-    //       const pos = {
-    //         lat: position.coords.latitude,
-    //         lng: position.coords.longitude,
-    //       };
-    //       console.log(pos)
-    //     },
-    //   );
-    // }
-
-    // {"latitude": 35.7072894, "longitude": -83.52209049999999} {"latitude": 35.7207205, "longitude": -83.51156010000001}
-
     navigator.geolocation.getCurrentPosition(success, error, options);
 
     navigator.geolocation.getCurrentPosition(position => {
@@ -57,13 +47,26 @@ const HemeMap = props => {
       var lng = parseFloat(position.coords.longitude);
 
       var initialRegion1 = {
-        latitude: lat,
-        longitude: lng,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0922,
+        latitude: 28.450627,
+        longitude: -16.263045,
+        latitudeDelta: 0.0422,
+        longitudeDelta: 0.0222,
       };
       setInitialRegion(initialRegion1);
       // console.log(initialRegion1);
+
+      const fetchCars = async () => {
+        try {
+          const response = await API.graphql(graphqlOperation(listCars));
+
+          setCars(response.data.listCars.items);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      fetchCars();
+
     });
   }, []);
 
@@ -72,7 +75,7 @@ const HemeMap = props => {
       <MapView
         style={styles.map}
         provider={PROVIDER_GOOGLE}
-        showsUserLocation={true}
+        showsUserLocation={false}
         initialRegion={initialRegion}>
         {cars.map(car => (
           <Marker

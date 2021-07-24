@@ -9,13 +9,13 @@ const PlaceRow = ({data}) => {
   return (
     <View style={styles.placeRow}>
       <View style={styles.iconContainer}>
-        { data.description === 'Home' && (
+        {data.description === 'Home' && (
           <Entypo name={'home'} size={20} color={'white'} />
         )}
-        { data.description === 'Work' && (
+        {data.description === 'Work' && (
           <FontAwesome name={'briefcase'} size={20} color={'white'} />
         )}
-        { data.description !== 'Home' && data.description !== 'Work' && (
+        {data.description !== 'Home' && data.description !== 'Work' && (
           <Entypo name={'location-pin'} size={20} color={'white'} />
         )}
       </View>
