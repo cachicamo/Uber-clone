@@ -6,41 +6,28 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import styles from './styles';
 
-const NewOrderPopup = () => {
-
-  const onDecline = () => {
-    console.warn('Declined')
-  };
-  const onAccept = () => {
-    console.warn('Accepted Order')
-  };
+const NewOrderPopup = ({newOrder, onAccept, onDecline, duration, distance}) => {
   return (
     <View style={styles.rootContainer}>
       <Pressable onPress={onDecline} style={styles.declineButton}>
         <Text style={styles.declineText}>
-        <Ionicons name={"close"} size={20} />
-        {' '}
-        Decline
+          <Ionicons name={'close'} size={20} /> Decline
         </Text>
       </Pressable>
       <Pressable onPress={onAccept} style={styles.popupContainer}>
         <View style={styles.row}>
-          <Text style={styles.uberType}>UberX</Text>
+          <Text style={styles.uberType}>{newOrder.type}</Text>
           <View style={styles.userBg}>
-            <FontAwesome name={"user"} size={36} color={"lightgrey"}/>
+            <FontAwesome name={'user'} size={36} color={'lightgrey'} />
           </View>
           <Text style={styles.uberType}>
-            <AntDesign name={"star"} size={14} />
-            {' '}
-            5.00
+            <AntDesign name={'star'} size={14} /> {newOrder.user.rating}
           </Text>
         </View>
-        <Text style={styles.minutes}>12 min</Text>
-        <Text style={styles.distance}>0.2 mi</Text>
+        <Text style={styles.minutes}>{duration} min</Text>
+        <Text style={styles.distance}>{distance} mi</Text>
         <Text style={styles.direction}>
-          <AntDesign name={"star"} size={14} />
-          {' '}
-          towards your destination
+          <AntDesign name={'star'} size={14} /> towards your destination
         </Text>
       </Pressable>
     </View>

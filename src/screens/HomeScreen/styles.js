@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 50,
   },
-  goButtom:{
+  goButtom: {
     position: 'absolute',
     borderRadius: 50,
     backgroundColor: '#1495ff',
@@ -57,6 +57,15 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: 'white',
     fontWeight: 'bold',
+  },
+  pickupRow: {
+    backgroundColor: '#7ee733',
+    width: 30,
+    height: 30,
+    marginHorizontal: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 50,
   },
 });
 
