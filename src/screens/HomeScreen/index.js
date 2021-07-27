@@ -7,6 +7,10 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import {Auth, API, graphqlOperation} from 'aws-amplify';
+import {getCar} from '../../graphql/queries';
+import {updateCar} from '../../graphql/mutations';
+
 import NewOrderPopup from '../../components/NewOrderPopup';
 
 import styles from './styles';
@@ -16,8 +20,9 @@ import styles from './styles';
 const GOOGLE_MAPS_APIKEY = 'AIzaSyDh_K53QUG4zUe8ayqnSEkauwAqJ-DVzSk';
 
 const HomeScreen = () => {
+  const [car, setCar] = useState(null);
   const [myPosition, setMyPosition] = useState(null);
-  const [isOnline, setIsOnline] = useState(false);
+  // const [isOnline, setIsOnline] = useState(false);
   const [order, setOrder] = useState(null);
   const [newOrder, setNewOrder] = useState({
     id: '1',
@@ -35,6 +40,23 @@ const HomeScreen = () => {
     },
   });
 
+  const fetchCar = async () => {
+    try {
+      const userData = await Auth.currentAuthenticatedUser();
+      const carData = await API.graphql(
+        graphqlOperation(getCar, {id: userData.attributes.sub}),
+      );
+
+      setCar(carData.data.getCar);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCar();
+  }, []);
+
   const onDecline = () => {
     setNewOrder(null);
   };
@@ -44,8 +66,21 @@ const HomeScreen = () => {
     setNewOrder(null);
   };
 
-  const onGoPress = () => {
-    setIsOnline(!isOnline);
+  const onGoPress = async () => {
+    try {
+      const userData = await Auth.currentAuthenticatedUser();
+      const input = {
+        id: userData.attributes.sub,
+        isActive: !car?.isActive,
+      };
+      const updatedCarData = await API.graphql(
+        graphqlOperation(updateCar, {input}),
+      );
+      setCar(updatedCarData.data.updateCar);
+      // setIsOnline(!isOnline);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const onUserLocationChange = event => {
@@ -87,7 +122,6 @@ const HomeScreen = () => {
   };
 
   const renderBottomTitle = () => {
-    // console.log(order);
     if (order && order.isFinished) {
       return (
         <View style={{alignItems: 'center'}}>
@@ -144,12 +178,12 @@ const HomeScreen = () => {
         </View>
       );
     }
-    if (isOnline && !order) {
+    if (car?.isActive && !order) {
       return (
         <Text style={[styles.bottomText, {color: '#00AF0F'}]}>ONLINE</Text>
       );
     }
-    if (!isOnline) {
+    if (!car?.isActive) {
       return (
         <Text style={[styles.bottomText, {color: 'red'}]}>You're Offline</Text>
       );
@@ -220,7 +254,9 @@ const HomeScreen = () => {
 
         {!order && (
           <Pressable onPress={onGoPress} style={styles.goButtom}>
-            <Text style={styles.goButtonText}>{isOnline ? 'END' : 'GO'}</Text>
+            <Text style={styles.goButtonText}>
+              {car?.isActive ? 'END' : 'GO'}
+            </Text>
           </Pressable>
         )}
 
@@ -229,7 +265,7 @@ const HomeScreen = () => {
           {renderBottomTitle()}
           <Feather name="list" size={30} color="#4a4a4a" />
 
-          {newOrder && isOnline && (
+          {newOrder && car?.isActive && (
             <NewOrderPopup
               newOrder={newOrder}
               onDecline={onDecline}
