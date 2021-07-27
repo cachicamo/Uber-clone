@@ -220,7 +220,7 @@ const HomeScreen = () => {
 
         {!order && (
           <Pressable onPress={onGoPress} style={styles.goButtom}>
-            <Text style={styles.goButtonText}>{isOnline ? 'STOP' : 'GO'}</Text>
+            <Text style={styles.goButtonText}>{isOnline ? 'END' : 'GO'}</Text>
           </Pressable>
         )}
 
