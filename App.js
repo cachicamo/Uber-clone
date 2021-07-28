@@ -44,7 +44,7 @@ const App: () => Node = () => {
 
       // If not, create a new Car for the user
       if (carData.data.getCar) {
-        console.log('User already has a car assigned');
+        // console.log('User already has a car assigned');
         return;
       }
       const newCar = {

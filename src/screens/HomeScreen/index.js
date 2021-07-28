@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {View, SafeAreaView, Text, Pressable, Dimensions} from 'react-native';
 
-import MapView, {PROVIDER_GOOGLE} from 'react-native-maps';
+import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
@@ -10,6 +10,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import {Auth, API, graphqlOperation} from 'aws-amplify';
 import {getCar} from '../../graphql/queries';
 import {updateCar} from '../../graphql/mutations';
+import {listOrders} from '../../graphql/queries';
 
 import NewOrderPopup from '../../components/NewOrderPopup';
 
@@ -21,24 +22,24 @@ const GOOGLE_MAPS_APIKEY = 'AIzaSyDh_K53QUG4zUe8ayqnSEkauwAqJ-DVzSk';
 
 const HomeScreen = () => {
   const [car, setCar] = useState(null);
-  const [myPosition, setMyPosition] = useState(null);
-  // const [isOnline, setIsOnline] = useState(false);
   const [order, setOrder] = useState(null);
-  const [newOrder, setNewOrder] = useState({
-    id: '1',
-    type: 'UberX',
-    originLatitude: 37.7915456,
-    originLongitude: -122.4096002,
-    destLatitude: 37.791804,
-    destLongitude: -122.4048769,
+  const [newOrders, setNewOrders] = useState([]);
+  
+  // {
+  //   id: '1',
+  //   type: 'UberX',
+  //   originLatitude: 37.7915456,
+  //   originLongitude: -122.4096002,
+  //   destLatitude: 37.791804,
+  //   destLongitude: -122.4048769,
 
-    pickedUp: false,
+  //   pickedUp: false,
 
-    user: {
-      name: 'Danny',
-      rating: '4.82',
-    },
-  });
+  //   user: {
+  //     name: 'Danny',
+  //     rating: '4.82',
+  //   },
+  // },
 
   const fetchCar = async () => {
     try {
@@ -53,17 +54,30 @@ const HomeScreen = () => {
     }
   };
 
+  const fetchOrders = async () => {
+    try {
+      const ordersData = await API.graphql(graphqlOperation(
+        listOrders,
+        // { filter: {status: {eq: 'NEW'}}}
+      ));
+      setNewOrders(ordersData.data.listOrders.items);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     fetchCar();
+    fetchOrders();
   }, []);
 
   const onDecline = () => {
-    setNewOrder(null);
+    setNewOrders(newOrders.slice(1));
   };
 
   const onAccept = neworder => {
     setOrder(neworder);
-    setNewOrder(null);
+    setNewOrders(newOrders.slice(1));
   };
 
   const onGoPress = async () => {
@@ -78,13 +92,31 @@ const HomeScreen = () => {
       );
       setCar(updatedCarData.data.updateCar);
       // setIsOnline(!isOnline);
-    } catch (error) {
-      console.error(error);
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  const onUserLocationChange = event => {
-    setMyPosition(event.nativeEvent.coordinate);
+  const onUserLocationChange = async (event) => {
+    const {latitude, longitude, heading} = event.nativeEvent.coordinate;
+    // update the car position in the order
+    try {
+      const userData = await Auth.currentAuthenticatedUser();
+      const input = {
+        id: userData.attributes.sub,
+        latitude,
+        longitude,
+        heading,
+      };
+      const updatedCarData = await API.graphql(
+        graphqlOperation(updateCar, {input}),
+      );
+      setCar(updatedCarData.data.updateCar);
+      // setIsOnline(!isOnline);
+      console.log(updatedCarData);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const onDirectionFound = event => {
@@ -126,7 +158,7 @@ const HomeScreen = () => {
       return (
         <View style={{alignItems: 'center'}}>
           <Text style={[styles.bottomText, {color: 'black'}]}>
-            <Icon name={'user'} size={20} color={'black'} /> {order.user.name}
+            <Icon name={'user'} size={20} color={'black'} /> {order.user.username}
           </Text>
           <View
             style={{
@@ -156,7 +188,7 @@ const HomeScreen = () => {
             <Text>{order.distance ? order.distance.toFixed(1) : '?'} mi</Text>
           </View>
           <Text style={[styles.bottomText, {color: 'black'}]}>
-            Dropping off {order.user.name}
+            Dropping off {order.user.username}
           </Text>
         </View>
       );
@@ -173,7 +205,7 @@ const HomeScreen = () => {
             <Text>{order.distance ? order.distance.toFixed(1) : '?'} mi</Text>
           </View>
           <Text style={[styles.bottomText, {color: 'black'}]}>
-            Picking up {order.user.name}
+            Picking up {order.user.username}
           </Text>
         </View>
       );
@@ -189,7 +221,6 @@ const HomeScreen = () => {
       );
     }
   };
-
   return (
     <SafeAreaView>
       <View style={styles.homeView}>
@@ -199,20 +230,38 @@ const HomeScreen = () => {
           showsUserLocation={true}
           onUserLocationChange={onUserLocationChange}
           initialRegion={{
-            latitude: 37.785834,
-            longitude: -122.406417,
+            latitude: 35.71559, // 37.785834,
+            longitude: -83.50947, // -122.406417,
             latitudeDelta: 0.0222,
             longitudeDelta: 0.0121,
           }}>
           {order && (
-            <MapViewDirections
-              origin={myPosition}
-              onReady={onDirectionFound}
-              destination={getDestination()}
-              apikey={GOOGLE_MAPS_APIKEY}
-              strokeWidth={5}
-              strokeColor="black"
-            />
+            <>
+              <MapViewDirections
+                origin={{
+                  latitude: car?.latitude,
+                  longitude: car?.longitude,
+                }}
+                onReady={onDirectionFound}
+                destination={getDestination()}
+                apikey={GOOGLE_MAPS_APIKEY}
+                strokeWidth={5}
+                strokeColor="black"
+              />
+              <Marker
+                coordinate={{
+                  latitude: car?.latitude,
+                  longitude: car?.longitude,
+                }}
+                title={'Origin'}
+                description={'some address'}
+              />
+              <Marker
+                coordinate={getDestination()}
+                title={'Destination'}
+                description={'some address'}
+              />
+            </>
           )}
         </MapView>
 
@@ -265,11 +314,11 @@ const HomeScreen = () => {
           {renderBottomTitle()}
           <Feather name="list" size={30} color="#4a4a4a" />
 
-          {newOrder && car?.isActive && (
+          {newOrders.length > 0 && !order && car?.isActive && (
             <NewOrderPopup
-              newOrder={newOrder}
+              newOrder={newOrders[0]}
               onDecline={onDecline}
-              onAccept={() => onAccept(newOrder)}
+              onAccept={() => onAccept(newOrders[0])}
               duration="2"
               distance="0.5"
             />
