@@ -5,7 +5,21 @@
  * @format
  */
 
+// module.exports = {
+//   transformer: {
+//     getTransformOptions: async () => ({
+//       transform: {
+//         experimentalImportSupport: false,
+//         inlineRequires: true,
+//       },
+//     }),
+//   },
+// };
+
 module.exports = {
+  resolver: {
+    blacklistRE: /#current-cloud-backend\/.*/,
+  },
   transformer: {
     getTransformOptions: async () => ({
       transform: {

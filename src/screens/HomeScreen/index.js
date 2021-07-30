@@ -16,7 +16,7 @@ const HomeScreen = () => {
       {/* Message */}
       <CovidMessage />
 
-      {/* Button Component */}
+      {/* Botton Component */}
       <HomeSearch />
     </View>
   );

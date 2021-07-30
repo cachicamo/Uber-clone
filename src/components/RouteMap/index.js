@@ -6,7 +6,7 @@ import MapViewDirections from 'react-native-maps-directions';
 import {API, graphqlOperation} from 'aws-amplify';
 import {listCars} from '../../graphql/queries';
 
-const GOOGLE_MAPS_KEY = 'AIzaSyDh_K53QUG4zUe8ayqnSEkauwAqJ-DVzSk';
+const GOOGLE_MAPS_KEY = 'Your Google API key goes here';
 
 const RouteMap = ({origin, destination}) => {
   const [cars, setCars] = useState([]);

@@ -63,7 +63,7 @@ const DestinationSearch = props => {
           }}
           fetchDetails
           query={{
-            key: 'AIzaSyDh_K53QUG4zUe8ayqnSEkauwAqJ-DVzSk',
+            key: 'Your Google API key goes here',
             language: 'en',
           }}
           renderRow={data => <PlaceRow data={data} />}
@@ -86,7 +86,7 @@ const DestinationSearch = props => {
           }}
           fetchDetails
           query={{
-            key: 'AIzaSyDh_K53QUG4zUe8ayqnSEkauwAqJ-DVzSk',
+            key: 'Your Google API key goes here',
             language: 'en',
           }}
           renderRow={data => <PlaceRow data={data} />}

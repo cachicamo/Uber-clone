@@ -1,16 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, Image, View, Dimensions} from 'react-native';
+import {StyleSheet, Image, View} from 'react-native';
 
 import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
 import {API, graphqlOperation} from 'aws-amplify';
 import {listCars} from '../../graphql/queries';
 
-// import cars from '../../assets/data/cars';
-
-const HemeMap = props => {
+const HomeMap = props => {
   const [initialRegion, setInitialRegion] = useState(null);
   const [cars, setCars] = useState([]);
-  
   
   const getImage = type => {
     if (type === 'UberX') {
@@ -46,30 +43,29 @@ const HemeMap = props => {
       var lat = parseFloat(position.coords.latitude);
       var lng = parseFloat(position.coords.longitude);
 
-      var initialRegion1 = {
-        latitude: 28.450627,
-        longitude: -16.263045,
-        latitudeDelta: 0.0422,
-        longitudeDelta: 0.0222,
+      var initialRegion = {
+        latitude: 35.71559, // 37.785834,
+        longitude: -83.50947, // -122.406417,
+        latitudeDelta: 0.0222,
+        longitudeDelta: 0.0121,
       };
-      setInitialRegion(initialRegion1);
-      // console.log(initialRegion1);
+      setInitialRegion(initialRegion);
 
       const fetchCars = async () => {
         try {
           const response = await API.graphql(graphqlOperation(listCars));
 
           setCars(response.data.listCars.items);
+          // console.log(response.data.listCars.items);
         } catch (error) {
           console.error(error);
         }
       };
-
+      
       fetchCars();
-
     });
   }, []);
-
+  // console.log(cars);
   return (
     <View style={styles.homeView}>
       <MapView
@@ -102,7 +98,7 @@ const HemeMap = props => {
   );
 };
 
-export default HemeMap;
+export default HomeMap;
 
 const styles = StyleSheet.create({
   homeView: {

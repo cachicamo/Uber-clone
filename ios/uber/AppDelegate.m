@@ -33,7 +33,7 @@ static void InitializeFlipper(UIApplication *application) {
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  [GMSServices provideAPIKey:@"AIzaSyDh_K53QUG4zUe8ayqnSEkauwAqJ-DVzSk"];
+  [GMSServices provideAPIKey:@"Your Google API key goes here"];
   
   #ifdef FB_SONARKIT_ENABLED
     InitializeFlipper(application);
@@ -67,6 +67,8 @@ static void InitializeFlipper(UIApplication *application) {
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
+  // jsCodeLocation = [NSURL URLWithString:@"http://localhost:8083/index.ios.bundle?platform=ios&dev=true"];
+
 #if DEBUG
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
 #else

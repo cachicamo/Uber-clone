@@ -22,11 +22,9 @@ const SearchResults = () => {
     if (!type) {
       return;
     }
-
     // Submit to server
     try {
       const userInfo = await Auth.currentAuthenticatedUser();
-
       const date = new Date();
       const input = {
         createdAt: date.toISOString(),
@@ -37,19 +35,16 @@ const SearchResults = () => {
         destLongitude: destinationPlace.details.geometry.location.lng,
         userId: userInfo.attributes.sub,
 
-        carId: '1',
+        carId: '1', //should be driver userId once driver accepts
+        status: 'NEW',
       };
       const response = await API.graphql(
         graphqlOperation(createOrder, {
           input: input,
         }),
       );
-
-      console.log('Good: ', response);
-      Alert.alert( "Hurraaay!", "Your Order has been submitted", [{
-        text: "Go Home", 
-        onPress: () => navigation.navigate('Home'),
-      }])
+      // console.log(response.data.createOrder.id);
+      navigation.navigate('OrderScreen', {id: response.data.createOrder.id});
     } catch (error) {
       console.error('SearchResults: ', error);
     }
