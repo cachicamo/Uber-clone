@@ -9,7 +9,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 
 import {Auth, API, graphqlOperation} from 'aws-amplify';
 import {getCar} from '../../graphql/queries';
-import {updateCar} from '../../graphql/mutations';
+import {updateCar, updateOrder} from '../../graphql/mutations';
 import {listOrders} from '../../graphql/queries';
 
 import NewOrderPopup from '../../components/NewOrderPopup';
@@ -18,28 +18,12 @@ import styles from './styles';
 
 // const origin = {latitude: 37.7818456, longitude: -122.4296002};
 // const destination = {latitude: 37.791707, longitude: -122.443769};
-const GOOGLE_MAPS_APIKEY = 'AIzaSyDh_K53QUG4zUe8ayqnSEkauwAqJ-DVzSk';
+const GOOGLE_MAPS_APIKEY = 'Your Google API key goes here';
 
 const HomeScreen = () => {
   const [car, setCar] = useState(null);
   const [order, setOrder] = useState(null);
   const [newOrders, setNewOrders] = useState([]);
-  
-  // {
-  //   id: '1',
-  //   type: 'UberX',
-  //   originLatitude: 37.7915456,
-  //   originLongitude: -122.4096002,
-  //   destLatitude: 37.791804,
-  //   destLongitude: -122.4048769,
-
-  //   pickedUp: false,
-
-  //   user: {
-  //     name: 'Danny',
-  //     rating: '4.82',
-  //   },
-  // },
 
   const fetchCar = async () => {
     try {
@@ -56,10 +40,9 @@ const HomeScreen = () => {
 
   const fetchOrders = async () => {
     try {
-      const ordersData = await API.graphql(graphqlOperation(
-        listOrders,
-        // { filter: {status: {eq: 'NEW'}}}
-      ));
+      const ordersData = await API.graphql(
+        graphqlOperation(listOrders, {filter: {status: {eq: 'NEW'}}}),
+      );
       setNewOrders(ordersData.data.listOrders.items);
     } catch (e) {
       console.error(e);
@@ -75,8 +58,22 @@ const HomeScreen = () => {
     setNewOrders(newOrders.slice(1));
   };
 
-  const onAccept = neworder => {
-    setOrder(neworder);
+  const onAccept = async neworder => {
+    try {
+      const input = {
+        // ...neworder,
+        id: neworder.id,
+        status: 'PICKING_UP_CLIENT',
+        carId: car.id,
+      };
+
+      const orderData = await API.graphql(
+        graphqlOperation(updateOrder, {input}),
+      );
+      setOrder(orderData.data.updateOrder);
+    } catch (e) {
+      console.error(e);
+    }
     setNewOrders(newOrders.slice(1));
   };
 
@@ -91,7 +88,9 @@ const HomeScreen = () => {
         graphqlOperation(updateCar, {input}),
       );
       setCar(updatedCarData.data.updateCar);
-      // setIsOnline(!isOnline);
+      if (car.isActive) {
+        fetchOrders();
+      };
     } catch (e) {
       console.error(e);
     }
@@ -113,7 +112,7 @@ const HomeScreen = () => {
       );
       setCar(updatedCarData.data.updateCar);
       // setIsOnline(!isOnline);
-      console.log(updatedCarData);
+      // console.log(updatedCarData);
     } catch (e) {
       console.error(e);
     }
@@ -158,7 +157,8 @@ const HomeScreen = () => {
       return (
         <View style={{alignItems: 'center'}}>
           <Text style={[styles.bottomText, {color: 'black'}]}>
-            <Icon name={'user'} size={20} color={'black'} /> {order.user.username}
+            <Icon name={'user'} size={20} color={'black'} />{' '}
+            {order.user.username}
           </Text>
           <View
             style={{
